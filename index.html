@@ -160,6 +160,18 @@
     const DESIGN_W = 1920;
     const DESIGN_H = 1080;
 
+    // ─────────────────────────────────────────────
+    //  ASSETS LOAD
+    // ─────────────────────────────────────────────
+    const assets = {
+      ship: new Image(),
+      gear: new Image(),
+      pipe: new Image()
+    };
+    assets.ship.src = 'assets/ship.png';
+    assets.gear.src = 'assets/gear.png';
+    assets.pipe.src = 'assets/pipe.png';
+
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     const wrapper = document.getElementById('gameWrapper');
@@ -293,60 +305,10 @@
         ctx.translate(this.x, this.y);
         ctx.rotate(this.angle);
 
-        const r2 = this.r * 0.65;
-        const r1 = this.r;
-        const n = this.teeth;
-
-        // Body gradient - Make it 3D and vibrant
-        const grd = ctx.createRadialGradient(-r1 * 0.2, -r1 * 0.2, r2 * 0.1, 0, 0, r1);
-        grd.addColorStop(0, hsl(this.hue, 100, 70));
-        grd.addColorStop(0.4, hsl(this.hue, 100, 45));
-        grd.addColorStop(1, hsl(this.hue, 100, 20));
-        ctx.fillStyle = grd;
-        ctx.strokeStyle = hsl(this.hue, 90, 85);
-        ctx.lineWidth = 3;
-
-        // 3D Shadow
-        ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
-        ctx.shadowBlur = 15;
-        ctx.shadowOffsetX = 10;
-        ctx.shadowOffsetY = 10;
-
-        // Draw gear teeth
-        ctx.beginPath();
-        for (let i = 0; i < n * 2; i++) {
-          const angle = (Math.PI * 2 * i) / (n * 2);
-          const r = i % 2 === 0 ? r1 : r2;
-          const x = r * Math.cos(angle);
-          const y = r * Math.sin(angle);
-          if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-        }
-        ctx.closePath();
-        ctx.fill();
-        ctx.stroke();
-
-        // Reset shadow for inner parts
-        ctx.shadowColor = 'transparent';
-
-        // Inner hole
-        ctx.beginPath();
-        ctx.arc(0, 0, r2 * 0.3, 0, Math.PI * 2);
-        ctx.fillStyle = '#111';
-        ctx.fill();
-        ctx.strokeStyle = hsl(this.hue, 60, 80);
-        ctx.lineWidth = 1.5;
-        ctx.stroke();
-
-        // Cross spokes
-        ctx.strokeStyle = hsl(this.hue, 60, 60);
-        ctx.lineWidth = 3;
-        for (let s = 0; s < 4; s++) {
-          const a = (Math.PI / 2) * s;
-          ctx.beginPath();
-          ctx.moveTo(r2 * 0.3 * Math.cos(a), r2 * 0.3 * Math.sin(a));
-          ctx.lineTo(r2 * 0.9 * Math.cos(a), r2 * 0.9 * Math.sin(a));
-          ctx.stroke();
-        }
+        ctx.globalCompositeOperation = 'screen';
+        const drawR = this.r * 1.5;
+        ctx.drawImage(assets.gear, -drawR, -drawR, drawR * 2, drawR * 2);
+        ctx.globalCompositeOperation = 'source-over';
 
         ctx.restore();
       }
@@ -378,59 +340,13 @@
           const h = yBot - yTop;
           if (h <= 0) return;
           ctx.save();
-          // Drop shadow for 3D depth
-          ctx.shadowColor = 'rgba(0,0,0,0.8)';
-          ctx.shadowBlur = 15;
-          ctx.shadowOffsetX = -8;
-
-          const grd = ctx.createLinearGradient(this.x, 0, this.x + this.w, 0);
-          grd.addColorStop(0, hsl(this.hue, 100, 25));
-          grd.addColorStop(0.2, hsl(this.hue, 100, 60)); // bright specular highlight
-          grd.addColorStop(0.5, hsl(this.hue, 90, 45));
-          grd.addColorStop(1, hsl(this.hue, 100, 15));
-
-          ctx.fillStyle = grd;
-          ctx.fillRect(this.x, yTop, this.w, h);
-          ctx.restore();
-
-          // Highlights (extra glossy)
-          ctx.fillStyle = hsl(this.hue, 100, 85, 0.6);
-          ctx.fillRect(this.x + 6, yTop, 6, h);
-          ctx.fillStyle = 'rgba(255,255,255,0.4)';
-          ctx.fillRect(this.x + 8, yTop, 3, h);
-
-          // Pipe caps
-          const capH = 24;
-          const capW = this.w + 16;
-          const capX = this.x - 8;
-
-          const capGrd = ctx.createLinearGradient(capX, 0, capX + capW, 0);
-          capGrd.addColorStop(0, hsl(this.hue, 100, 30));
-          capGrd.addColorStop(0.2, hsl(this.hue, 100, 70));
-          capGrd.addColorStop(0.5, hsl(this.hue, 90, 50));
-          capGrd.addColorStop(1, hsl(this.hue, 100, 20));
-
-          ctx.save();
-          ctx.shadowColor = 'rgba(0,0,0,0.8)';
-          ctx.shadowBlur = 10;
-          ctx.shadowOffsetY = yTop > 0 ? -5 : 5;
-
-          ctx.fillStyle = capGrd;
-          if (yTop > 0) {
-            ctx.fillRect(capX, yBot - capH, capW, capH);
-            // Cap specular highlight
-            ctx.fillStyle = 'rgba(255,255,255,0.5)';
-            ctx.fillRect(capX + 10, yBot - capH, 4, capH);
-            ctx.fillStyle = hsl(this.hue, 100, 80);
-            ctx.fillRect(capX, yBot - capH, capW, 4);
-          } else {
-            ctx.fillRect(capX, yTop, capW, capH);
-            // Cap specular highlight
-            ctx.fillStyle = 'rgba(255,255,255,0.5)';
-            ctx.fillRect(capX + 10, yTop, 4, capH);
-            ctx.fillStyle = hsl(this.hue, 100, 80);
-            ctx.fillRect(capX, yTop + capH - 4, capW, 4);
-          }
+          ctx.globalCompositeOperation = 'screen';
+          
+          // Draw the high-quality pipe asset, stretching it vertically
+          // with a slight horizontal expanding for neon glow rendering
+          ctx.drawImage(assets.pipe, this.x - 20, yTop, this.w + 40, h);
+          
+          ctx.globalCompositeOperation = 'source-over';
           ctx.restore();
         };
 
@@ -632,78 +548,18 @@
         ctx.translate(this.x, this.y);
         ctx.rotate(this.angle);
 
-        const w2 = this.w / 2;
-        const h2 = this.h / 2;
-
-        // Engine flame
-        const flameLen = 20 + Math.abs(Math.sin(this.flamePhase)) * 30;
-        const flamePts = [
-          [-w2 - flameLen, -4],
-          [-w2 - flameLen - rand(-5, 5), 0],
-          [-w2 - flameLen, 4],
-          [-w2, h2 * 0.6],
-        ];
-        ctx.beginPath();
-        ctx.moveTo(-w2, -h2 * 0.5);
-        for (const p of flamePts) ctx.lineTo(...p);
-        ctx.closePath();
-        const flameGrd = ctx.createLinearGradient(-w2 - flameLen, 0, -w2, 0);
-        flameGrd.addColorStop(0, 'rgba(255,200,50,0)');
-        flameGrd.addColorStop(0.3, 'rgba(255,120,0,0.8)');
-        flameGrd.addColorStop(1, 'rgba(255,255,150,1)');
-        ctx.fillStyle = flameGrd;
-        ctx.fill();
-
-        // Main body
-        ctx.beginPath();
-        ctx.moveTo(w2, 0);
-        ctx.lineTo(w2 * 0.6, -h2);
-        ctx.lineTo(-w2, -h2 * 0.7);
-        ctx.lineTo(-w2, h2 * 0.7);
-        ctx.lineTo(w2 * 0.6, h2);
-        ctx.closePath();
-        const bodyGrd = ctx.createLinearGradient(-w2, 0, w2, 0);
-        bodyGrd.addColorStop(0, '#1a3a6b');
-        bodyGrd.addColorStop(0.5, '#2a6eb5');
-        bodyGrd.addColorStop(1, '#1a3a6b');
-        ctx.fillStyle = bodyGrd;
-        ctx.fill();
-        ctx.strokeStyle = '#5bf';
-        ctx.lineWidth = 2;
-        ctx.stroke();
-
-        // Cockpit dome
-        ctx.beginPath();
-        ctx.arc(w2 * 0.05, 0, h2 * 0.55, 0, Math.PI * 2);
-        const domeGrd = ctx.createRadialGradient(-3, -5, 1, 0, 0, h2 * 0.55);
-        domeGrd.addColorStop(0, 'rgba(180,240,255,0.95)');
-        domeGrd.addColorStop(0.6, 'rgba(50,130,210,0.7)');
-        domeGrd.addColorStop(1, 'rgba(10,40,90,0.4)');
-        ctx.fillStyle = domeGrd;
-        ctx.fill();
-        ctx.strokeStyle = '#aef';
-        ctx.lineWidth = 1.5;
-        ctx.stroke();
-
-        // Wing
-        ctx.beginPath();
-        ctx.moveTo(-w2 * 0.2, h2 * 0.5);
-        ctx.lineTo(-w2 * 0.6, h2 * 1.5);
-        ctx.lineTo(w2 * 0.1, h2 * 0.9);
-        ctx.closePath();
-        ctx.fillStyle = '#163060';
-        ctx.fill();
-        ctx.strokeStyle = '#5bf';
-        ctx.lineWidth = 1;
-        ctx.stroke();
+        ctx.globalCompositeOperation = 'screen';
+        // The image is a square around the ship. we make it ~180x180 to fit the 72x36 core body
+        ctx.drawImage(assets.ship, -90, -90, 180, 180);
+        ctx.globalCompositeOperation = 'source-over';
 
         // Shield circle
         if (this.shielded) {
           ctx.beginPath();
           ctx.arc(0, 0, 45, 0, Math.PI * 2);
-          ctx.strokeStyle = hsl(200, 100, 70, 0.6);
-          ctx.lineWidth = 3;
-          ctx.setLineDash([8, 4]);
+          ctx.strokeStyle = hsl(200, 100, 70, 0.9);
+          ctx.lineWidth = 4;
+          ctx.setLineDash([12, 6]);
           ctx.stroke();
           ctx.setLineDash([]);
         }
@@ -739,22 +595,14 @@
 
       draw() {
         ctx.save();
-        ctx.globalAlpha = this.alpha;
+        ctx.globalAlpha = this.alpha * 0.8;
+        ctx.globalCompositeOperation = 'screen';
         ctx.translate(this.x, this.y);
         ctx.rotate(this.angle);
 
-        const r2 = this.r * 0.65;
-        ctx.beginPath();
-        for (let i = 0; i < this.teeth * 2; i++) {
-          const a = (Math.PI * 2 * i) / (this.teeth * 2);
-          const r = i % 2 === 0 ? this.r : r2;
-          const x = r * Math.cos(a), y = r * Math.sin(a);
-          if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-        }
-        ctx.closePath();
-        ctx.strokeStyle = hsl(this.hue, 80, 70);
-        ctx.lineWidth = 2;
-        ctx.stroke();
+        const drawR = this.r * 1.4;
+        ctx.drawImage(assets.gear, -drawR, -drawR, drawR * 2, drawR * 2);
+
         ctx.restore();
       }
     }
