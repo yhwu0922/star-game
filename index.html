@@ -75,7 +75,7 @@
     const firebaseConfig = {
       apiKey: "AIzaSyBURJoBAAA9TZ6dQvZDstiVBBY7XoqdhrA",
       authDomain: "star-adventure-game.firebaseapp.com",
-      databaseURL: "https://star-adventure-game-default-rtdb.firebaseio.com", // commonly required for RTDB
+      databaseURL: "https://star-adventure-game-default-rtdb.asia-southeast1.firebasedatabase.app/", // Asia-Southeast1 region
       projectId: "star-adventure-game",
       storageBucket: "star-adventure-game.firebasestorage.app",
       messagingSenderId: "546180888124",
@@ -105,9 +105,16 @@
         setTimeout(() => btn.style.background = 'rgba(0, 170, 255, 0.1)', 100);
 
         if (firebase.apps.length > 0) {
-          firebase.database().ref('rooms/' + roomIDParam + '/jump_timestamp').set(Date.now());
+          firebase.database().ref('rooms/' + roomIDParam + '/jump_timestamp').set(Date.now())
+            .then(() => console.log("Thrust sent successfully"))
+            .catch(err => {
+              console.error("Firebase Write Error:", err);
+              btn.innerText = "❌";
+              setTimeout(() => btn.innerText = "🚀", 1000);
+            });
         } else {
           console.warn("Firebase not properly initialized. Please add API keys.");
+          alert("Firebase 未初始化。");
         }
       };
 
@@ -128,6 +135,7 @@
       if (firebase.apps.length > 0) {
         firebase.database().ref('rooms/' + roomID + '/jump_timestamp').on('value', (snapshot) => {
           const val = snapshot.val();
+          console.log("Firebase sync received:", val);
           if (val && typeof player !== "undefined" && player) {
             // Trigger jump logic remotely
             if (gameState === 'start') {
@@ -137,7 +145,12 @@
               player.thrust();
             }
           }
+        }, (err) => {
+          console.error("Firebase Read Error:", err);
+          alert("Firebase 連線失敗！請檢查資料庫網址與權限設定 (Rules)。");
         });
+      } else {
+        console.warn("Firebase app not initialized - skipping listener.");
       }
     }
 
