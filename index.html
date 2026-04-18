@@ -756,7 +756,7 @@
     // ─────────────────────────────────────────────
     //  SPEED CONTROL
     // ─────────────────────────────────────────────
-    let gameScrollSpeed = 8.3; // default scroll speed (10x of original 0.83)
+    let gameScrollSpeed = 0.83; // default scroll speed
 
     const speedSlider = document.getElementById('speedSlider');
     const speedValueLabel = document.getElementById('speedValue');
@@ -765,8 +765,8 @@
     speedSlider.addEventListener('input', () => {
       const v = parseInt(speedSlider.value, 10);
       speedValueLabel.textContent = v;
-      // Map 1–10 to a range of 3.0–20.0 pixels/frame (10x magnification)
-      gameScrollSpeed = 3.0 + (v - 1) * (17.0 / 9);
+      // Map 1–10 to a range of 0.3–2.0 pixels/frame
+      gameScrollSpeed = 0.3 + (v - 1) * (1.7 / 9);
     });
 
     function hidePreGameUI() {
