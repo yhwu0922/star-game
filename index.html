@@ -603,7 +603,7 @@
         this.teleportCooldown = 0;
       }
 
-      get collisionRadius() { return 16; }
+      get collisionRadius() { return 8; }
 
       thrust() {
         this.vy = this.thrustPow;
@@ -628,14 +628,14 @@
         ctx.rotate(this.angle);
 
         ctx.globalCompositeOperation = 'screen';
-        // The image is a square around the ship. we make it ~180x180 to fit the 72x36 core body
-        ctx.drawImage(assets.ship, -90, -90, 180, 180);
+        // The image is a square around the ship. Halved from 180x180 to 90x90
+        ctx.drawImage(assets.ship, -45, -45, 90, 90);
         ctx.globalCompositeOperation = 'source-over';
 
-        // Shield circle
+        // Shield circle (halved radius from 45 to 22)
         if (this.shielded) {
           ctx.beginPath();
-          ctx.arc(0, 0, 45, 0, Math.PI * 2);
+          ctx.arc(0, 0, 22, 0, Math.PI * 2);
           ctx.strokeStyle = hsl(200, 100, 70, 0.9);
           ctx.lineWidth = 4;
           ctx.setLineDash([12, 6]);
@@ -756,7 +756,7 @@
     // ─────────────────────────────────────────────
     //  SPEED CONTROL
     // ─────────────────────────────────────────────
-    let gameScrollSpeed = 0.83; // default scroll speed
+    let gameScrollSpeed = 8.3; // default scroll speed (10x of original 0.83)
 
     const speedSlider = document.getElementById('speedSlider');
     const speedValueLabel = document.getElementById('speedValue');
@@ -765,8 +765,8 @@
     speedSlider.addEventListener('input', () => {
       const v = parseInt(speedSlider.value, 10);
       speedValueLabel.textContent = v;
-      // Map 1–10 to a range of 0.3–2.0 pixels/frame
-      gameScrollSpeed = 0.3 + (v - 1) * (1.7 / 9);
+      // Map 1–10 to a range of 3.0–20.0 pixels/frame (10x magnification)
+      gameScrollSpeed = 3.0 + (v - 1) * (17.0 / 9);
     });
 
     function hidePreGameUI() {
